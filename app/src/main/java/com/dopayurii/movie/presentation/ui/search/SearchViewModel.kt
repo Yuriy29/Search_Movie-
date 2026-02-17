@@ -38,6 +38,11 @@ class SearchViewModel @Inject constructor(
     private val searchMovies: SearchMoviesUseCase
 ) : ViewModel() {
 
+    companion object {
+        private const val DEBOUNCE_MS = 750L
+        private const val MIN_QUERY_LENGTH = 3
+    }
+
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
@@ -54,11 +59,6 @@ class SearchViewModel @Inject constructor(
                 performSearch(query, page = 1)
             }
             .launchIn(viewModelScope)         // Scope to ViewModel lifecycle
-    }
-
-    companion object {
-        private const val DEBOUNCE_MS = 750L
-        private const val MIN_QUERY_LENGTH = 3
     }
 
     fun onEvent(event: SearchUiEvent) {
