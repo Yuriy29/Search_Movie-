@@ -1,6 +1,6 @@
 # Movie Explorer
 
-A modern **Android movie browsing application** built with **Jetpack Compose** that allows users to explore top-rated films, search by title, and manage favorites with local persistence.
+A modern **Android movie browsing application** built with **Jetpack Compose** that allows users to explore top-rated films, search by title
 
 ## Features
 
