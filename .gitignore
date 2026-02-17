@@ -22,3 +22,6 @@ captures/
 .externalNativeBuild/
 .cxx/
 .kotlin/
+
+# Maestro UI testing flows
+.maestro/
