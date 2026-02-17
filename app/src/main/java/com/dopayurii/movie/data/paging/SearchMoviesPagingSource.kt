@@ -3,6 +3,7 @@ package com.dopayurii.movie.data.paging
 import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.dopayurii.movie.BuildConfig
 import com.dopayurii.movie.data.model.MovieSummary
 import com.dopayurii.movie.data.remote.MovieApiService
 import com.dopayurii.movie.data.remote.toMovieSummary
@@ -17,16 +18,22 @@ class SearchMoviesPagingSource @Inject constructor(
         private const val TAG = "SearchPagingSource"
         private const val STARTING_PAGE_INDEX = 1
         private const val MIN_QUERY_LENGTH = 2
-        private const val ITEMS_PER_PAGE = 10
+
+        /** Page size for pagination - shared across app */
+        const val PAGE_SIZE = 10
     }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, MovieSummary> {
         val page = params.key ?: STARTING_PAGE_INDEX
 
-        Log.d(TAG, "Loading page $page for query: '$query'")
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Loading page $page for query: '$query'")
+        }
 
         if (query.length < MIN_QUERY_LENGTH) {
-            Log.d(TAG, "Query too short, returning empty")
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Query too short, returning empty")
+            }
             return LoadResult.Page(
                 data = emptyList(),
                 prevKey = null,
@@ -39,7 +46,9 @@ class SearchMoviesPagingSource @Inject constructor(
             val searchList = response.search ?: emptyList()
 
             if (response.response == "False" || searchList.isEmpty()) {
-                Log.w(TAG, "API returned False or empty: ${response.error}")
+                if (BuildConfig.DEBUG) {
+                    Log.w(TAG, "API returned False or empty: ${response.error}")
+                }
                 return LoadResult.Page(
                     data = emptyList(),
                     prevKey = null,
@@ -51,10 +60,12 @@ class SearchMoviesPagingSource @Inject constructor(
                 .distinctBy { it.imdbId }
 
             val totalResults = response.totalResults.toIntOrNull() ?: 0
-            val loadedSoFar = (page - 1) * ITEMS_PER_PAGE + movies.size
+            val loadedSoFar = (page - 1) * PAGE_SIZE + movies.size
             val nextKey = if (loadedSoFar >= totalResults || movies.isEmpty()) null else page + 1
 
-            Log.d(TAG, "Returning ${movies.size} movies, page=$page, nextKey=$nextKey, loaded=$loadedSoFar/$totalResults")
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Returning ${movies.size} movies, page=$page, nextKey=$nextKey, loaded=$loadedSoFar/$totalResults")
+            }
 
             LoadResult.Page(
                 data = movies,
@@ -63,7 +74,9 @@ class SearchMoviesPagingSource @Inject constructor(
             )
 
         } catch (e: Exception) {
-            Log.e(TAG, "Error loading page $page", e)
+            if (BuildConfig.DEBUG) {
+                Log.e(TAG, "Error loading page $page", e)
+            }
             LoadResult.Error(e)
         }
     }

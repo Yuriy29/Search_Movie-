@@ -4,11 +4,13 @@ import android.util.Log
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.dopayurii.movie.BuildConfig
 import com.dopayurii.movie.data.local.MovieDao
 import com.dopayurii.movie.data.model.Movie
 import com.dopayurii.movie.data.model.MovieSummary
 import com.dopayurii.movie.data.model.Result
 import com.dopayurii.movie.data.paging.SearchMoviesPagingSource
+import com.dopayurii.movie.data.paging.SearchMoviesPagingSource.Companion.PAGE_SIZE
 import com.dopayurii.movie.data.remote.MovieApiService
 import com.dopayurii.movie.domain.repository.MovieRepository
 import kotlinx.coroutines.flow.Flow
@@ -27,7 +29,6 @@ class MovieRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "MovieRepository"
-        private const val PAGE_SIZE = 10
     }
 
     /**
@@ -65,7 +66,9 @@ class MovieRepositoryImpl @Inject constructor(
                 movieDao.insertMovie(remoteMovie)
                 Result.Success(remoteMovie)
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to fetch movie details for id: $id", e)
+                if (BuildConfig.DEBUG) {
+                    Log.e(TAG, "Failed to fetch movie details for id: $id", e)
+                }
                 Result.Error("Failed to load movie details: ${e.message}", e)
             }
         }

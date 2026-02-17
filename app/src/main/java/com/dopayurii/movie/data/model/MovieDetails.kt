@@ -46,21 +46,9 @@ data class Movie(
     val country: List<String>,
     @SerializedName("rating")
     val imdbRating: Double?,
-    @SerializedName("")
     var seenAtInMillis: Long,
     var isFavourite: Boolean = false,
-    //val isOnWatchList: Boolean = false
 )
-
-/**
- * Converts this Movie to a MovieSummary for list display.
- * @return Simplified MovieSummary containing only essential information
- */
-fun Movie.toMoviePreview() : MovieSummary{
-    return MovieSummary(
-        title, yearFrom, imdbId, type, poster
-    )
-}
 
 
 

@@ -19,6 +19,26 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.dopayurii.movie.data.model.MovieSummary
+import java.io.IOException
+import retrofit2.HttpException
+
+/**
+ * Maps throwable errors to user-friendly error messages.
+ */
+private fun getUserFriendlyErrorMessage(error: Throwable): String {
+    return when (error) {
+        is IOException -> "No internet connection. Please check your network and try again."
+        is HttpException -> {
+            when (error.code()) {
+                401 -> "API key is invalid. Please check your configuration."
+                404 -> "No movies found. Try a different search term."
+                500, 502, 503, 504 -> "Server error. Please try again later."
+                else -> "Something went wrong. Please try again."
+            }
+        }
+        else -> error.localizedMessage ?: "Failed to load results"
+    }
+}
 
 @Composable
 fun SearchResultsList(
@@ -57,7 +77,7 @@ fun SearchResultsList(
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = refreshState.error.localizedMessage ?: "Failed to load results",
+                                text = getUserFriendlyErrorMessage(refreshState.error),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(16.dp)
@@ -93,7 +113,7 @@ fun SearchResultsList(
         // 2️⃣ Display items using stable keys
         items(
             count = movies.itemCount,
-            key = { index -> "${movies[index]?.imdbId}_${index}" },
+            key = movies.itemKey { it.imdbId },
             contentType = movies.itemContentType { "movie" }
         ) { index ->
             movies[index]?.let { movie ->
@@ -136,7 +156,7 @@ fun SearchResultsList(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = error.error.localizedMessage ?: "Failed to load more",
+                        text = getUserFriendlyErrorMessage(error.error),
                         color = MaterialTheme.colorScheme.error
                     )
                     Button(

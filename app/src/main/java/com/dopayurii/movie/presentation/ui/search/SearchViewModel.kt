@@ -5,9 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.dopayurii.movie.BuildConfig
 import com.dopayurii.movie.data.model.MovieSummary
-import com.dopayurii.movie.presentation.ui.model.SearchUiState
 import com.dopayurii.movie.domain.usecase.SearchMoviesUseCase
+import com.dopayurii.movie.presentation.ui.model.SearchUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -68,7 +69,9 @@ class SearchViewModel @Inject constructor(
         .debounce(DEBOUNCE_MS)
         .distinctUntilChanged() // Prevent duplicate queries
         .flatMapLatest { query ->
-            Log.d("SearchViewModel", "flatMapLatest executing search for: '$query'")
+            if (BuildConfig.DEBUG) {
+                Log.d("SearchViewModel", "flatMapLatest executing search for: '$query'")
+            }
             searchMovies(query)
         }
         .cachedIn(viewModelScope)
@@ -79,7 +82,9 @@ class SearchViewModel @Inject constructor(
             .filter { it.length >= MIN_QUERY_LENGTH } // Filter first
             .debounce(DEBOUNCE_MS)
             .onEach { query ->
-                Log.d("SearchViewModel", "onEach: updating UI state for query: '$query'")
+                if (BuildConfig.DEBUG) {
+                    Log.d("SearchViewModel", "onEach: updating UI state for query: '$query'")
+                }
                 _uiState.update { it.copy(query = query, isLoading = true, errorMessage = null) }
             }
             .launchIn(viewModelScope)
@@ -88,19 +93,25 @@ class SearchViewModel @Inject constructor(
     fun onEvent(event: SearchUiEvent) {
         when (event) {
             is SearchUiEvent.OnQueryChange -> {
-                Log.d("SearchViewModel", "onEvent OnQueryChange: '${event.query}'")
+                if (BuildConfig.DEBUG) {
+                    Log.d("SearchViewModel", "onEvent OnQueryChange: '${event.query}'")
+                }
                 _uiState.update { it.copy(query = event.query) }
                 // Only emit to search flow if query meets minimum length
                 if (event.query.length >= MIN_QUERY_LENGTH) {
                     viewModelScope.launch {
-                        Log.d("SearchViewModel", "Emitting query: '${event.query}'")
+                        if (BuildConfig.DEBUG) {
+                            Log.d("SearchViewModel", "Emitting query: '${event.query}'")
+                        }
                         searchQueryFlow.emit(event.query)
                     }
                 }
             }
 
             is SearchUiEvent.OnClearSearch -> {
-                Log.d("SearchViewModel", "onEvent OnClearSearch")
+                if (BuildConfig.DEBUG) {
+                    Log.d("SearchViewModel", "onEvent OnClearSearch")
+                }
                 _uiState.update {
                     SearchUiState() // Reset to initial state
                 }
