@@ -1,4 +1,4 @@
-# Movie Explorer
+# Search Movie
 
 A modern **Android movie browsing application** built with **Jetpack Compose** that allows users to explore top-rated films, search by title
 
