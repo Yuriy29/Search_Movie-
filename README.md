@@ -7,7 +7,7 @@ A modern **Android movie browsing application** built with **Jetpack Compose** t
 - **Search** movies by title using the OMDB API
 - **Paginated search** with AndroidX Paging 3 for efficient loading of large result sets
 - **Movie details**
-- **Offline support** via Room database
+- **Cache mechanism** via Room database
 - **Material 3 Design** with dynamic theming
 
 <img src="screenshots/Recording.gif" alt="App Demo" width="40%">
