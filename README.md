@@ -9,8 +9,6 @@ A modern **Android movie browsing application** built with **Jetpack Compose** t
 - **Offline support** via Room database
 - **Material 3 Design** with dynamic theming
 
-## Demo
-
 <img src="screenshots/Recording.gif" alt="App Demo" width="40%">
 
 ## How to Run
@@ -27,7 +25,7 @@ A modern **Android movie browsing application** built with **Jetpack Compose** t
 1. Clone the repository:
    ```bash
    git clone <repository-url>
-   cd MovieExplorer
+   cd Search_Movie
    ```
 
 2. Open the project in Android Studio
@@ -85,7 +83,7 @@ app/src/main/java/com/dopayurii/movie/
 - **MVVM Pattern**: Each screen has a ViewModel that exposes UI state via StateFlow
 - **Dependency Injection**: Hilt provides dependencies across all layers
 - **Repository Pattern**: Abstracts data sources (API + local database) from domain layer
-- **Use Cases**: Encapsulate single business logic operations (e.g., `SearchMovies`, `ToggleFavorite`)
+- **Use Cases**: Encapsulate single business logic operations (e.g., `FetchMovieDetailsUseCase`, `SearchMoviesUseCase`)
 - **Unidirectional Data Flow**: UI events → ViewModel → State updates → UI recomposition
 
 ## Tech Stack & Libraries
