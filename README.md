@@ -5,6 +5,7 @@ A modern **Android movie browsing application** built with **Jetpack Compose** t
 ## Features
 
 - **Search** movies by title using the OMDB API
+- **Paginated search** with AndroidX Paging 3 for efficient loading of large result sets
 - **Movie details**
 - **Offline support** via Room database
 - **Material 3 Design** with dynamic theming
@@ -64,9 +65,10 @@ The project follows **Clean Architecture** with a clear separation of concerns a
 ```
 app/src/main/java/com/dopayurii/movie/
 ├── data/               # Data layer
-│   ├── local/          # Room entities & DAOs
+│   ├── local/          # Room entities, DAOs & Paging sources
 │   ├── model/          # DTOs for API/Database
 │   ├── remote/         # Retrofit API service
+│   ├── paging/         # Paging sources for pagination
 │   └── repository/     # Repository implementations
 ├── domain/             # Domain layer (business logic)
 │   ├── model/          # Domain models
@@ -134,6 +136,7 @@ app/src/main/java/com/dopayurii/movie/
 | Library | Version | Purpose |
 |---------|---------|---------|
 | Coroutines | 1.7.3 | Async programming |
+| AndroidX Paging | 3.3.0 | Pagination with runtime and Compose support |
 | msz-progress-indicator | 0.8.0 | Animated progress indicators |
 
 ### Testing
@@ -156,6 +159,7 @@ MovieExplorer/
 │   │   ├── data/
 │   │   │   ├── local/               # Room database
 │   │   │   ├── model/               # Data transfer objects
+│   │   │   ├── paging/              # Paging sources for pagination
 │   │   │   ├── remote/              # API service
 │   │   │   └── repository/          # Repository implementations
 │   │   ├── di/
