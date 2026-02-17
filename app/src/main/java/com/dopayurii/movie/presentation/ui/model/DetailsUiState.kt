@@ -1,4 +1,4 @@
-package com.dopayurii.movie.domain.model
+package com.dopayurii.movie.presentation.ui.model
 
 import com.dopayurii.movie.data.model.Movie
 

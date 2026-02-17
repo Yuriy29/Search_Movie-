@@ -3,7 +3,7 @@ package com.dopayurii.movie.presentation.ui.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dopayurii.movie.data.model.Result
-import com.dopayurii.movie.domain.model.SearchUiState
+import com.dopayurii.movie.presentation.ui.model.SearchUiState
 import com.dopayurii.movie.domain.usecase.SearchMoviesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview

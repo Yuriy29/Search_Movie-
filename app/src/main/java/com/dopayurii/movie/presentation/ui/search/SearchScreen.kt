@@ -24,7 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ehsanmsz.mszprogressindicator.progressindicator.BallPulseProgressIndicator
-import com.dopayurii.movie.domain.model.SearchUiState
+import com.dopayurii.movie.presentation.ui.model.SearchUiState
 import com.dopayurii.movie.presentation.navigation.navigateToDetailsScreen
 import com.dopayurii.movie.presentation.ui.search.components.SearchBar
 import com.dopayurii.movie.presentation.ui.search.components.SearchResultsList

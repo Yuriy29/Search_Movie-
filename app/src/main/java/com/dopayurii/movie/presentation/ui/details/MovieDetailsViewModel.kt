@@ -3,7 +3,7 @@ package com.dopayurii.movie.presentation.ui.details
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dopayurii.movie.data.model.Result
-import com.dopayurii.movie.domain.model.DetailsUiState
+import com.dopayurii.movie.presentation.ui.model.DetailsUiState
 import com.dopayurii.movie.domain.usecase.FetchMovieDetailsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

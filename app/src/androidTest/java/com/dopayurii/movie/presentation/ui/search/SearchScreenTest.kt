@@ -10,7 +10,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.dopayurii.movie.data.model.MovieSummary
 import com.dopayurii.movie.data.model.MovieType
-import com.dopayurii.movie.domain.model.SearchUiState
+import com.dopayurii.movie.presentation.ui.model.SearchUiState
 import com.dopayurii.movie.presentation.ui.theme.MovieExplorerTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

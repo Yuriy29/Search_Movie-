@@ -36,7 +36,7 @@ import coil.compose.AsyncImage
 import com.ehsanmsz.mszprogressindicator.progressindicator.BallPulseProgressIndicator
 import com.dopayurii.movie.R
 import com.dopayurii.movie.data.model.Movie
-import com.dopayurii.movie.domain.model.DetailsUiState
+import com.dopayurii.movie.presentation.ui.model.DetailsUiState
 
 /**
  * Route composable that wires up the ViewModel.

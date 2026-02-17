@@ -7,7 +7,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.dopayurii.movie.data.model.Movie
 import com.dopayurii.movie.data.model.MovieType
-import com.dopayurii.movie.domain.model.DetailsUiState
+import com.dopayurii.movie.presentation.ui.model.DetailsUiState
 import com.dopayurii.movie.presentation.ui.theme.MovieExplorerTheme
 import org.junit.Assert.assertTrue
 import org.junit.Rule
