@@ -1,14 +1,17 @@
 package com.dopayurii.movie.data.repository
 
 import android.util.Log
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.dopayurii.movie.data.local.MovieDao
 import com.dopayurii.movie.data.model.Movie
-import com.dopayurii.movie.data.model.MovieSearchResult
 import com.dopayurii.movie.data.model.MovieSummary
 import com.dopayurii.movie.data.model.Result
+import com.dopayurii.movie.data.paging.SearchMoviesPagingSource
 import com.dopayurii.movie.data.remote.MovieApiService
-import com.dopayurii.movie.data.remote.toMovieSummary
 import com.dopayurii.movie.domain.repository.MovieRepository
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,31 +27,28 @@ class MovieRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "MovieRepository"
-        private const val MIN_QUERY_LENGTH = 3
+        private const val PAGE_SIZE = 10
     }
 
-    override suspend fun searchMovies(query: String, page: Int): Result<MovieSearchResult> {
-        if (query.length < MIN_QUERY_LENGTH) {
-            return Result.Success(MovieSearchResult())
-        }
-
-        return try {
-            val response = movieApiService.searchMovies(
-                search = query.trim(),
-                page = page
-            )
-
-            if (response.response == "False") {
-                Result.Error(response.error ?: "Search failed")
-            } else {
-                val movies = response.search.map { it.toMovieSummary() }
-                val totalResults = response.totalResults.toIntOrNull() ?: 0
-                Result.Success(MovieSearchResult(movies, totalResults))
+    /**
+     * Returns a Flow of PagingData for searching movies.
+     * Uses Paging 3 library with SearchMoviesPagingSource.
+     *
+     * @param query Search query string
+     * @return Flow of PagingData containing MovieSummary items
+     */
+    override fun searchMovies(query: String): Flow<PagingData<MovieSummary>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = PAGE_SIZE,
+                enablePlaceholders = false,
+                prefetchDistance = PAGE_SIZE,
+                initialLoadSize = PAGE_SIZE
+            ),
+            pagingSourceFactory = {
+                SearchMoviesPagingSource(movieApiService, query)
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Search failed for query: $query, page: $page", e)
-            Result.Error("Failed to search movies: ${e.message}", e)
-        }
+        ).flow
     }
 
     override suspend fun fetchMovieDetails(id: String): Result<Movie> {

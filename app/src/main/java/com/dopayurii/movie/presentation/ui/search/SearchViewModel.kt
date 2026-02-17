@@ -1,18 +1,25 @@
 package com.dopayurii.movie.presentation.ui.search
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dopayurii.movie.data.model.Result
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import com.dopayurii.movie.data.model.MovieSummary
 import com.dopayurii.movie.presentation.ui.model.SearchUiState
 import com.dopayurii.movie.domain.usecase.SearchMoviesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -24,133 +31,80 @@ import javax.inject.Inject
  */
 sealed class SearchUiEvent {
     data class OnQueryChange(val query: String) : SearchUiEvent()
-    data class OnSearchSubmit(val query: String) : SearchUiEvent()
-    data object OnLoadMore : SearchUiEvent()
     data object OnClearSearch : SearchUiEvent()
 }
 
 /**
- * ViewModel for the Search screen with pagination support.
+ * ViewModel for the Search screen using Paging 3 for pagination.
  */
-@OptIn(FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val searchMovies: SearchMoviesUseCase
 ) : ViewModel() {
 
     companion object {
-        private const val DEBOUNCE_MS = 750L
-        private const val MIN_QUERY_LENGTH = 3
+        private const val DEBOUNCE_MS = 300L
+        private const val MIN_QUERY_LENGTH = 2
     }
 
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState: StateFlow<SearchUiState> = _uiState.asStateFlow()
 
-    private var lastQuery = ""
+    // Debounced search flow - triggers search 300ms after user stops typing
+    // Using extraBufferCapacity to ensure emissions don't fail
+    private val searchQueryFlow = MutableSharedFlow<String>(
+        extraBufferCapacity = 1,
+        replay = 0
+    )
 
-    // Debounced search flow - triggers search 750ms after user stops typing
-    private val searchQueryFlow = MutableSharedFlow<String>()
+    /**
+     * PagingData flow for search results.
+     * Uses flatMapLatest to cancel previous search when query changes.
+     * Cached in viewModelScope to survive configuration changes.
+     */
+    val searchResults: Flow<PagingData<MovieSummary>> = searchQueryFlow
+        .filter { it.length >= MIN_QUERY_LENGTH } // Filter first to prevent short queries
+        .debounce(DEBOUNCE_MS)
+        .distinctUntilChanged() // Prevent duplicate queries
+        .flatMapLatest { query ->
+            Log.d("SearchViewModel", "flatMapLatest executing search for: '$query'")
+            searchMovies(query)
+        }
+        .cachedIn(viewModelScope)
 
     init {
+        // Update UI state when search is triggered
         searchQueryFlow
-            .debounce(DEBOUNCE_MS)            // Wait after last emission
-            .filter { it.length >= MIN_QUERY_LENGTH }  // Only search if query valid
+            .filter { it.length >= MIN_QUERY_LENGTH } // Filter first
+            .debounce(DEBOUNCE_MS)
             .onEach { query ->
-                performSearch(query, page = 1)
+                Log.d("SearchViewModel", "onEach: updating UI state for query: '$query'")
+                _uiState.update { it.copy(query = query, isLoading = true, errorMessage = null) }
             }
-            .launchIn(viewModelScope)         // Scope to ViewModel lifecycle
+            .launchIn(viewModelScope)
     }
 
     fun onEvent(event: SearchUiEvent) {
         when (event) {
             is SearchUiEvent.OnQueryChange -> {
+                Log.d("SearchViewModel", "onEvent OnQueryChange: '${event.query}'")
                 _uiState.update { it.copy(query = event.query) }
-                searchQueryFlow.tryEmit(event.query)  // Emit to debounced flow
-            }
-
-            is SearchUiEvent.OnSearchSubmit -> {
-                performSearch(event.query, page = 1)  // Immediate search on submit
-            }
-
-            is SearchUiEvent.OnLoadMore -> {
-                loadNextPage()
+                // Only emit to search flow if query meets minimum length
+                if (event.query.length >= MIN_QUERY_LENGTH) {
+                    viewModelScope.launch {
+                        Log.d("SearchViewModel", "Emitting query: '${event.query}'")
+                        searchQueryFlow.emit(event.query)
+                    }
+                }
             }
 
             is SearchUiEvent.OnClearSearch -> {
+                Log.d("SearchViewModel", "onEvent OnClearSearch")
                 _uiState.update {
                     SearchUiState() // Reset to initial state
                 }
-                lastQuery = ""
-            }
-        }
-    }
-
-    private fun performSearch(query: String, page: Int) {
-        if (query.length < MIN_QUERY_LENGTH) return
-
-        lastQuery = query
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-
-        viewModelScope.launch {
-            when (val result = searchMovies(query, page = page)) {
-                is Result.Success -> {
-                    val movies = result.data.movies
-                    val total = result.data.totalResults
-                    _uiState.update { state ->
-                        state.copy(
-                            isLoading = false,
-                            searchResults = movies,
-                            totalResults = total,
-                            currentPage = 1,
-                            hasMoreResults = movies.size < total,
-                            errorMessage = null
-                        )
-                    }
-                }
-                is Result.Error -> {
-                    _uiState.update { state ->
-                        state.copy(
-                            isLoading = false,
-                            errorMessage = result.message
-                        )
-                    }
-                }
-                is Result.Loading -> { /* Already handled */ }
-            }
-        }
-    }
-
-    private fun loadNextPage() {
-        val currentState = _uiState.value
-        if (currentState.isLoadingMore || !currentState.hasMoreResults) return
-
-        val nextPage = currentState.currentPage + 1
-        _uiState.update { it.copy(isLoadingMore = true) }
-
-        viewModelScope.launch {
-            when (val result = searchMovies(lastQuery, page = nextPage)) {
-                is Result.Success -> {
-                    val newMovies = result.data.movies
-                    val allMovies = currentState.searchResults + newMovies
-                    _uiState.update { state ->
-                        state.copy(
-                            isLoadingMore = false,
-                            searchResults = allMovies,
-                            currentPage = nextPage,
-                            hasMoreResults = allMovies.size < state.totalResults,
-                            errorMessage = null
-                        )
-                    }
-                }
-                is Result.Error -> {
-                    _uiState.update { state ->
-                        state.copy(
-                            isLoadingMore = false,
-                            errorMessage = result.message
-                        )
-                    }
-                }
-                is Result.Loading -> { /* Already handled */ }
+                // Don't emit to searchQueryFlow - just let UI reset via SearchScreen logic
             }
         }
     }

@@ -1,16 +1,16 @@
 package com.dopayurii.movie.domain.usecase
 
-import com.dopayurii.movie.data.model.MovieSearchResult
+import androidx.paging.PagingData
 import com.dopayurii.movie.data.model.MovieSummary
-import com.dopayurii.movie.data.model.MovieType
-import com.dopayurii.movie.data.model.Result
 import com.dopayurii.movie.domain.repository.MovieRepository
-import io.mockk.coEvery
-import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 
@@ -29,79 +29,31 @@ class SearchMoviesUseCaseTest {
     }
 
     @Test
-    fun `invoke calls repository with query and page`() = runTest {
+    fun `invoke calls repository searchMovies with query`() = runTest {
         // Given
         val query = "Batman"
-        val page = 1
-        val searchResult = createTestSearchResult()
-        coEvery { repository.searchMovies(query, page) } returns Result.Success(searchResult)
+        val pagingData = PagingData.empty<MovieSummary>()
+        every { repository.searchMovies(query) } returns flowOf(pagingData)
 
         // When
-        useCase(query, page)
+        useCase(query)
 
         // Then
-        coVerify { repository.searchMovies(query, page) }
+        verify { repository.searchMovies(query) }
     }
 
     @Test
-    fun `invoke returns success when repository succeeds`() = runTest {
+    fun `invoke returns Flow of PagingData`() = runTest {
         // Given
         val query = "Batman"
-        val page = 1
-        val searchResult = createTestSearchResult()
-        coEvery { repository.searchMovies(query, page) } returns Result.Success(searchResult)
+        val pagingData = PagingData.empty<MovieSummary>()
+        every { repository.searchMovies(query) } returns flowOf(pagingData)
 
         // When
-        val result = useCase(query, page)
+        val result: Flow<PagingData<MovieSummary>> = useCase(query)
 
         // Then
-        assertTrue(result is Result.Success)
-        assertEquals(searchResult, (result as Result.Success).data)
-    }
-
-    @Test
-    fun `invoke returns error when repository fails`() = runTest {
-        // Given
-        val query = "Batman"
-        val page = 1
-        val errorMessage = "Network error"
-        coEvery { repository.searchMovies(query, page) } returns Result.Error(errorMessage)
-
-        // When
-        val result = useCase(query, page)
-
-        // Then
-        assertTrue(result is Result.Error)
-        assertEquals(errorMessage, (result as Result.Error).message)
-    }
-
-    @Test
-    fun `invoke uses default page value`() = runTest {
-        // Given
-        val query = "Batman"
-        val searchResult = createTestSearchResult()
-        coEvery { repository.searchMovies(query, 1) } returns Result.Success(searchResult)
-
-        // When
-        useCase(query)  // No page parameter provided
-
-        // Then
-        coVerify { repository.searchMovies(query, 1) }
-    }
-
-    private fun createTestSearchResult(): MovieSearchResult {
-        val movies = listOf(
-            MovieSummary(
-                title = "The Batman",
-                year = 2022,
-                imdbId = "tt1877830",
-                type = MovieType.MOVIE,
-                poster = "https://example.com/poster.jpg"
-            )
-        )
-        return MovieSearchResult(
-            movies = movies,
-            totalResults = 1
-        )
+        assertNotNull(result)
+        assertNotNull(result.first())
     }
 }

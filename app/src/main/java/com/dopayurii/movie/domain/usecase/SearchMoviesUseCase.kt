@@ -1,19 +1,22 @@
 package com.dopayurii.movie.domain.usecase
 
-import com.dopayurii.movie.data.model.MovieSearchResult
-import com.dopayurii.movie.data.model.Result
+import androidx.paging.PagingData
+import com.dopayurii.movie.data.model.MovieSummary
 import com.dopayurii.movie.domain.repository.MovieRepository
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 /**
  * Use case for searching movies by query with pagination.
+ * Returns a Flow of PagingData for use with Paging 3 library.
+ *
  * @param query Search string (minimum 2 characters)
- * @param page Page number (1-100)
+ * @return Flow of PagingData containing MovieSummary items
  */
 class SearchMoviesUseCase @Inject constructor(
     private val repository: MovieRepository
 ) {
-    suspend operator fun invoke(query: String, page: Int = 1): Result<MovieSearchResult> {
-        return repository.searchMovies(query, page)
+    operator fun invoke(query: String): Flow<PagingData<MovieSummary>> {
+        return repository.searchMovies(query)
     }
 }

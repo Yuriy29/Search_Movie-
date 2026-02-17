@@ -1,8 +1,10 @@
 package com.dopayurii.movie.domain.repository
 
+import androidx.paging.PagingData
 import com.dopayurii.movie.data.model.Movie
-import com.dopayurii.movie.data.model.MovieSearchResult
+import com.dopayurii.movie.data.model.MovieSummary
 import com.dopayurii.movie.data.model.Result
+import kotlinx.coroutines.flow.Flow
 
 /**
  * Repository interface for movie-related data operations.
@@ -10,11 +12,12 @@ import com.dopayurii.movie.data.model.Result
 interface MovieRepository {
     /**
      * Search for movies by query string with pagination.
+     * Returns a Flow of PagingData for use with Paging 3 library.
+     *
      * @param query Search query (minimum 2 characters)
-     * @param page Page number (1-100)
-     * @return Result of search with pagination info
+     * @return Flow of PagingData containing movie summaries
      */
-    suspend fun searchMovies(query: String, page: Int = 1): Result<MovieSearchResult>
+    fun searchMovies(query: String): Flow<PagingData<MovieSummary>>
 
     /**
      * Fetch detailed movie information by ID.

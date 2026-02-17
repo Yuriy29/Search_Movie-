@@ -2,7 +2,6 @@ package com.dopayurii.movie.presentation.ui.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,9 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.ehsanmsz.mszprogressindicator.progressindicator.BallPulseProgressIndicator
-import com.dopayurii.movie.presentation.ui.model.SearchUiState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.dopayurii.movie.data.model.MovieSummary
 import com.dopayurii.movie.presentation.navigation.navigateToDetailsScreen
+import com.dopayurii.movie.presentation.ui.model.SearchUiState
 import com.dopayurii.movie.presentation.ui.search.components.SearchBar
 import com.dopayurii.movie.presentation.ui.search.components.SearchResultsList
 
@@ -35,9 +36,11 @@ fun SearchRoute(
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val movies = viewModel.searchResults.collectAsLazyPagingItems()
 
     SearchScreen(
         uiState = uiState,
+        movies = movies,
         onEvent = viewModel::onEvent,
         onNavigateToDetails = { movieId ->
             navController.navigateToDetailsScreen(movieId)
@@ -46,11 +49,12 @@ fun SearchRoute(
 }
 
 /**
- * Stateless Search screen composable.
+ * Stateless Search screen composable using Paging 3.
  */
 @Composable
 fun SearchScreen(
     uiState: SearchUiState,
+    movies: LazyPagingItems<MovieSummary>,
     onEvent: (SearchUiEvent) -> Unit,
     onNavigateToDetails: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -63,29 +67,18 @@ fun SearchScreen(
         SearchBar(
             query = uiState.query,
             onQueryChange = { onEvent(SearchUiEvent.OnQueryChange(it)) },
-            onSearchSubmit = { onEvent(SearchUiEvent.OnSearchSubmit(it)) },
+            onSearchSubmit = { onEvent(SearchUiEvent.OnQueryChange(it)) },
             onClearClick = { onEvent(SearchUiEvent.OnClearSearch) }
         )
 
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.TopCenter
-        ) {
-            when {
-                uiState.isLoading && uiState.searchResults.isEmpty() -> SearchScreenLoading()
-                uiState.errorMessage != null && uiState.searchResults.isEmpty() ->
-                    SearchScreenError(uiState.errorMessage)
-                uiState.searchResults.isEmpty() && uiState.query.isEmpty() -> SearchScreenInitial()
-                uiState.searchResults.isEmpty() -> SearchScreenNoResults()
-                else -> SearchResultsList(
-                    results = uiState.searchResults,
-                    totalResults = uiState.totalResults,
-                    isLoadingMore = uiState.isLoadingMore,
-                    hasMoreResults = uiState.hasMoreResults,
-                    onMovieClick = onNavigateToDetails,
-                    onLoadMoreClick = { onEvent(SearchUiEvent.OnLoadMore) }
-                )
-            }
+        // Show initial state when query is too short (less than 2 chars)
+        if (uiState.query.length < 2) {
+            SearchScreenInitial()
+        } else {
+            SearchResultsList(
+                movies = movies,
+                onMovieClick = onNavigateToDetails
+            )
         }
     }
 }
@@ -112,65 +105,5 @@ private fun SearchScreenInitial() {
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-    }
-}
-
-@Composable
-private fun SearchScreenNoResults() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.Search,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.padding(16.dp))
-        Text(
-            text = "No results found",
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.padding(8.dp))
-        Text(
-            text = "Try different keywords or check your spelling",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-private fun SearchScreenError(message: String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp)
-    ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.error
-        )
-    }
-}
-
-@Composable
-private fun SearchScreenLoading() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        BallPulseProgressIndicator()
     }
 }

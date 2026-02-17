@@ -1,14 +1,12 @@
 package com.dopayurii.movie.presentation.ui.model
 
-import com.dopayurii.movie.data.model.MovieSummary
-
+/**
+ * UI state for the Search screen.
+ * Note: Search results are now managed by Paging 3 (LazyPagingItems),
+ * so this state only tracks query and high-level loading/error states.
+ */
 data class SearchUiState(
     val query: String = "",
-    val searchResults: List<MovieSummary> = emptyList(),
     val isLoading: Boolean = false,
-    val isLoadingMore: Boolean = false,
     val errorMessage: String? = null,
-    val totalResults: Int = 0,
-    val currentPage: Int = 1,
-    val hasMoreResults: Boolean = false,
 )
