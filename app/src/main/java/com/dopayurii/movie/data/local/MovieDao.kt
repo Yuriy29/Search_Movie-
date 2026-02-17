@@ -23,14 +23,6 @@ interface MovieDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMovie(movie: Movie)
 
-    /**
-     * Retrieves a movie by its IMDB ID as a Flow for reactive updates.
-     *
-     * @param id IMDB ID of the movie
-     * @return Flow emitting the Movie or null if not found
-     */
-    @Query("SELECT * FROM movieDetails WHERE imdbId = :id")
-    fun getMovie(id: String): Flow<Movie?>
 
     /**
      * Retrieves a movie by its IMDB ID as a one-time query.
@@ -42,43 +34,10 @@ interface MovieDao {
     suspend fun getMovieOnce(id: String): Movie?
 
     /**
-     * Deletes a movie from the database by its IMDB ID.
-     *
-     * @param id IMDB ID of the movie to delete
-     */
-    @Query("DELETE FROM movieDetails WHERE imdbId = :id")
-    suspend fun deleteMovie(id: String)
-
-    /**
      * Deletes a movie from the database.
      *
      * @param movie Movie entity to delete
      */
     @Delete
     suspend fun deleteMovie(movie: Movie)
-
-    /**
-     * Retrieves all movies ordered by last seen timestamp (most recent first).
-     *
-     * @return Flow emitting list of all movies ordered by seenAtInMillis DESC
-     */
-    @Query("SELECT * FROM movieDetails ORDER BY seenAtInMillis DESC")
-    fun getAllMovies(): Flow<List<Movie>>
-
-    /**
-     * Retrieves all movies ordered by IMDB rating (highest first).
-     *
-     * @return Flow emitting list of all movies ordered by imdbRating DESC
-     */
-    @Query("SELECT * FROM movieDetails ORDER BY imdbRating DESC")
-    fun getAllMoviesByRating(): Flow<List<Movie>>
-
-    /**
-     * Retrieves all movies marked as favourite.
-     *
-     * @return Flow emitting list of favourite movies
-     */
-    @Query("SELECT * FROM movieDetails WHERE isFavourite = 1")
-    fun getFavouriteMovies(): Flow<List<Movie>>
-
 }
