@@ -9,14 +9,6 @@ A modern **Android movie browsing application** built with **Jetpack Compose** t
 - **Offline support** via Room database for recently viewed movies
 - **Material 3 Design** with dynamic theming
 
-## Screenshots
-
-| Search Screen | Details Screen |
-| ------------- | -------------- |
-| ![Search](screenshots/Screenshot_20250417_213417.png) | ![Details](screenshots/Screenshot_20250417_213618.png) |
-| ![Search](screenshots/Screenshot_20250417_213534.png) | ![Details](screenshots/Screenshot_20250417_213723.png) |
-| ![Search](screenshots/Screenshot_20250417_213657.png) | ![Details](screenshots/Screenshot_20250417_213729.png) |
-
 ## Demo
 
 <img src="screenshots/Recording.gif" alt="App Demo" width="40%">
