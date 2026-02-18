@@ -58,6 +58,48 @@ A modern **Android movie browsing application** built with **Jetpack Compose** t
 1. Click **"Run > Run 'app'"** (or press `Shift + F10`)
 2. Select a connected device or emulator (API 29+)
 
+## Testing
+
+The project includes comprehensive test coverage with both unit tests and UI tests:
+
+### Unit Tests (`src/test`)
+
+Located in `app/src/test/java/com/dopayurii/movie/`
+
+| Test Class | Description |
+|------------|-------------|
+| `MovieRepositoryImplTest` | Tests repository logic including cache hits, API fallback, and error handling |
+| `SearchMoviesPagingSourceTest` | Tests Paging 3 implementation with various load scenarios |
+| `SearchMoviesUseCaseTest` | Validates search use case delegates to repository correctly |
+| `FetchMovieDetailsUseCaseTest` | Tests movie details fetching with cache and network scenarios |
+
+**Run unit tests:**
+```bash
+./gradlew test
+```
+
+### UI Tests (`src/androidTest`)
+
+Located in `app/src/androidTest/java/com/dopayurii/movie/`
+
+| Test Class | Description |
+|------------|-------------|
+| `SearchScreenTest` | Validates search screen UI including search bar, initial state, and query events |
+| `DetailsScreenTest` | Tests details screen with loading, error, and content states |
+
+**Run UI tests (requires connected device/emulator):**
+```bash
+./gradlew connectedAndroidTest
+```
+
+### Test Frameworks Used
+
+- **JUnit 4** - Unit testing framework
+- **MockK** - Kotlin mocking library for unit tests
+- **Coroutines Test** - Testing utilities for Kotlin coroutines
+- **Compose Test** - UI testing for Jetpack Compose
+- **Espresso** - Android UI testing framework
+
 ## Architecture
 
 The project follows **Clean Architecture** with a clear separation of concerns across three layers:
